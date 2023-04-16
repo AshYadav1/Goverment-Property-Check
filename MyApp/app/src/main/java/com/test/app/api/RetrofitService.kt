@@ -5,6 +5,7 @@ import ReadQrCodeResponse
 import android.content.Context
 import com.test.app.MyApplication
 import com.test.app.model.*
+import com.test.app.model.firebaseverify.RootVerifyModel
 import com.test.app.model.requestModel.MoveItemRequestModel
 import com.test.app.model.requestModel.RequestModelHolder
 import retrofit2.Call
@@ -36,6 +37,10 @@ interface RetrofitService {
 
     @PATCH("/transaction/{id}.json")
     fun patchFirebase(@Path("id") qrCode: String,@Body model: RequestModelHolder): Call<RequestModelHolder>
+
+
+    @PATCH("/transaction/{id}.json")
+    fun verifySerialNumber(@Path("id") qrCode: String?): Call<RootVerifyModel>
 
     @POST("app/moveitem.moveitem")
     fun moveItem(@Body model: MoveItemRequestModel): Call<ReadIdHolder>

@@ -16,4 +16,11 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="powered_by_momenttrack">powered by momentTrack</string>
     <string name="Next">Next</string>
+
+
+    // dilog text
+
+    <string name="dialogue_body">This is dialogue body.newgbhwgbw gwejbwiegbiwe ehiwbitwbti</string>
+    <string name="dialogue_text">ok</string>
+
 </resources>

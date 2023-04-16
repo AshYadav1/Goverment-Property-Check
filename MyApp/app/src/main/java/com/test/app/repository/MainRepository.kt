@@ -21,4 +21,5 @@ class MainRepository(private val retrofitService: RetrofitService,
     fun getLicenseId(qrCode: String)=retrofitService.getLicenseId(qrCode)
     fun patchData(qrCode: String,model:RequestModelHolder)=retrofitServiceForFirebase?.patchFirebase(qrCode,model)
     fun moveItem(uuid: MoveItemRequestModel) =restApiForMoveItem?.moveItem(uuid)
+    fun firebaseSerial(serialCode: String?) =retrofitServiceForFirebase?.verifySerialNumber(serialCode)
 }

@@ -1,0 +1,7 @@
+
+dkotlin:S107O"HThis function has 12 parameters, which is greater than the 7 authorized.(Û§˜Íıÿÿÿÿ
+jkotlin:S117Q"NRename this parameter to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(£«Î¾úÿÿÿÿ
+wkotlin:S1186,"ZAdd a nested comment explaining why this function is empty or complete the implementation.(ù‹£Äøÿÿÿÿ
+rkotlin:S1186G"ZAdd a nested comment explaining why this function is empty or complete the implementation.(£¾¥Ù
+skotlin:S1186ª"ZAdd a nested comment explaining why this function is empty or complete the implementation.(­Œÿ
+skotlin:S1186É"ZAdd a nested comment explaining why this function is empty or complete the implementation.(£¾¥Ù
