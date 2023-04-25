@@ -43,7 +43,7 @@ android:background="@color/white"
                 android:text="@string/set_up_kiosk"
                 android:textAllCaps="true"
                 android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>

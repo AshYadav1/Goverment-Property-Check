@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Government property check</string>
-    <string name="set_up_kiosk">Government property check system</string>
+    <string name="set_up_kiosk">Government Property Checkout System</string>
     <string name="enter_e_mail">Enter E-mail</string>
     <string name="submit">Submit</string>
     <string name="enter_password">Enter Password</string>

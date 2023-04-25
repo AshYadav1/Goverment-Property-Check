@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:text="@string/set_up_kiosk"
 
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textAllCaps="true"
                 android:layout_marginStart="8dp"
                 android:textColor="@color/white"
@@ -95,15 +95,14 @@
 
         <Button
             android:id="@+id/log_out"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/logout_width"
+            android:layout_height="@dimen/logout_height"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-
+            android:layout_gravity ="center"
             android:background="@drawable/button_background"
             android:text="@string/logout"
             android:textColor="@color/white"
-
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_submit" />
