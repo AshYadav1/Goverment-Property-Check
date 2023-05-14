@@ -10,17 +10,14 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatSpinner
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.budiyev.android.codescanner.*
 import com.google.android.material.snackbar.Snackbar
 import com.test.app.R
 import com.test.app.adapter.UserListAdapter
@@ -29,10 +26,13 @@ import com.test.app.model.User
 import com.test.app.repository.MainRepository
 import com.test.app.repository.MyViewModelFactory
 import com.test.app.viewmodel.ShowLocationDataViewModel
-import java.util.Calendar
+import java.util.*
 
 
 class ShowTimeSlotActivity : AppCompatActivity() {
+    private lateinit var scannedUserData: User
+    private lateinit var codeScanner: CodeScanner
+    private lateinit var scannerView: CodeScannerView
     private var ivBack: ImageView? = null
     private lateinit var mChooseLocationTime: String
     private var mCheckInOutId: String? = null
@@ -45,6 +45,8 @@ class ShowTimeSlotActivity : AppCompatActivity() {
     private lateinit var progress: ProgressDialog
     private var mLocationList: MutableList<User>? = null
     private lateinit var mCheckOutTimeTextView: TextView
+    private lateinit var tvUsrScanned: TextView
+    private lateinit var tvScannerTxt: TextView
     private lateinit var mCheckInTimeTextView: TextView
     private lateinit var mChooseInObject: User
     private var mCheckOutTime: String? = ""
@@ -59,16 +61,24 @@ class ShowTimeSlotActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_show_time_slot)
+        permissionCheck()
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences(packageName, Context.MODE_PRIVATE)
+        mCheckInTime = sharedPreferences.getString("check_in_name", "")
+        mCheckInTimeId = sharedPreferences.getString("check_in_id", "")
+        mCheckInOutId = sharedPreferences.getString("check_out_id", "")
+        mCheckOutTime = sharedPreferences.getString("check_out_name", "")
 
-        mCheckInTime = intent.getStringExtra("check_in_time")
-        mCheckInTimeId = intent.getStringExtra("check_in_time_id")
-        mCheckInOutId = intent.getStringExtra("check_OUT_time_id")
-        mCheckOutTime = intent.getStringExtra("check_OUT_time")
+
+//        mCheckInTime = intent.getStringExtra("check_in_time")
+//        mCheckInTimeId = intent.getStringExtra("check_in_time_id")
+//        mCheckInOutId = intent.getStringExtra("check_OUT_time_id")
+//        mCheckOutTime = intent.getStringExtra("check_OUT_time")
 
         viewModel =
             ViewModelProvider(
                 this,
-                MyViewModelFactory(MainRepository(retrofitService,null))
+                MyViewModelFactory(MainRepository(retrofitService, null))
             )[ShowLocationDataViewModel::class.java]
 
 
@@ -105,6 +115,15 @@ class ShowTimeSlotActivity : AppCompatActivity() {
                 finish()
             }
 
+        }
+
+
+        viewModel.userIdCaptured.observe(this) {
+            if (it > 0) {
+                // Iterate list
+                Log.e("Scanned User", "" + it)
+                getUserDetailFromResp(it)
+            }
         }
 
         viewModel.movieList.observe(this, Observer { it ->
@@ -144,9 +163,15 @@ class ShowTimeSlotActivity : AppCompatActivity() {
 
         viewModel.errorMessage.observe(this, Observer {
             Log.d("MainActivity", "errorMessage: $it")
+            Toast.makeText(this, it, Toast.LENGTH_LONG).show()
         })
 
         mSpinnerPeople = findViewById(R.id.acp_people)
+        tvScannerTxt = findViewById(R.id.tv_Scanner_txt)
+        tvUsrScanned = findViewById(R.id.usr_scanned)
+        scannerView = findViewById(R.id.scanner_view)
+        codeScanner = CodeScanner(this, scannerView)
+
         mCheckinCard = findViewById(R.id.cv_check_in)
         mCheckOutCard = findViewById(R.id.cv_check_out)
         mCheckInTimeTextView = findViewById(R.id.tv_check_in)
@@ -157,22 +182,22 @@ class ShowTimeSlotActivity : AppCompatActivity() {
 
         logout = findViewById<Button>(R.id.log_out)
         ivBack = findViewById<ImageView>(R.id.iv_back)
-        ivBack?.visibility=View.GONE
+        ivBack?.visibility = View.GONE
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
         mCheckinCard.setOnClickListener(View.OnClickListener {
             mCheckOutCard.visibility = View.GONE
-           mChooseLocationTime= Calendar.getInstance().timeInMillis.toString()
+            mChooseLocationTime = Calendar.getInstance().timeInMillis.toString()
             mSpinnerPeople.visibility = View.VISIBLE
-            btnSubmit?.visibility = View.VISIBLE
-
+            startQrCodeScanning()
         })
         mCheckOutCard.setOnClickListener(View.OnClickListener {
             mCheckinCard.visibility = View.GONE
-            mChooseLocationTime= Calendar.getInstance().timeInMillis.toString()
+            mChooseLocationTime = Calendar.getInstance().timeInMillis.toString()
 
-            mSpinnerPeople.visibility = View.VISIBLE
-            btnSubmit?.visibility = View.VISIBLE
+            mSpinnerPeople.visibility = View.GONE
+            btnSubmit?.visibility = View.GONE
+            startQrCodeScanning()
         })
 
         logout.setOnClickListener {
@@ -195,19 +220,16 @@ class ShowTimeSlotActivity : AppCompatActivity() {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 checkPermissionForCameraUse()
-            }
-            else {
-                if (mSpinnerPeople.selectedItemPosition > 0) {
+            } else {
+//                if (mSpinnerPeople.selectedItemPosition > 0) {
+                if (this::scannedUserData.isInitialized) {
                     val intent = Intent(this@ShowTimeSlotActivity, QrScannerActivity::class.java)
                     intent.putExtra(
-                        "user",
-                        mLocationList?.get(mSpinnerPeople.selectedItemPosition)?.lastName + " " + mLocationList?.get(
-                            mSpinnerPeople.selectedItemPosition
-                        )?.lastName
+                        "user", scannedUserData.firstName + " " + scannedUserData.lastName
                     )
                     intent.putExtra(
                         "user_id",
-                        mLocationList?.get(mSpinnerPeople.selectedItemPosition)?.personId
+                        scannedUserData.personId
                     )
                     intent.putExtra(
                         "user_time",
@@ -215,7 +237,7 @@ class ShowTimeSlotActivity : AppCompatActivity() {
                     )
                     intent.putExtra(
                         "location_choose_time",
-                       mChooseLocationTime
+                        mChooseLocationTime
                     )
 
                     intent.putExtra(
@@ -227,25 +249,23 @@ class ShowTimeSlotActivity : AppCompatActivity() {
                         "check_in_time",
                         mCheckInTime
                     )
-                    intent.putExtra("check_in_time_id",mCheckInTimeId
-                      )
-                    intent.putExtra("check_OUT_time_id",mCheckInOutId
-                       )
+                    intent.putExtra(
+                        "check_in_time_id", mCheckInTimeId
+                    )
+                    intent.putExtra(
+                        "check_OUT_time_id", mCheckInOutId
+                    )
                     intent.putExtra(
                         "check_OUT_time",
                         mCheckOutTime
                     )
                     startActivity(intent)
-//                    finish()
                 } else {
-                    val snack =
-                        Snackbar.make(it, "Please Choose User from list ", Snackbar.LENGTH_LONG)
-                    snack.show()
+                    Toast.makeText(this, "Unable to proceed, Check barcode", Toast.LENGTH_LONG)
+                        .show()
                 }
+
             }
-
-
-
         })
 
         mSpinnerPeople.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -266,14 +286,106 @@ class ShowTimeSlotActivity : AppCompatActivity() {
 
     }
 
+    private fun getUserDetailFromResp(userCode: Int?) {
+        for (i in mLocationList!!) {
+            Log.e("User id", "" + i.id)
+            if (userCode == i.id) {
+                scannedUserData = i
+            }
+        }
+        val sharedPreferences: SharedPreferences = this.getSharedPreferences(
+            packageName,
+            Context.MODE_PRIVATE
+        )
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString("scanned_username", scannedUserData!!.firstName + " " + scannedUserData!!.lastName)
+        editor.apply()
+        editor.commit()
+
+        if (this::scannedUserData.isInitialized) {
+            // Share detail
+            btnSubmit!!.visibility = View.VISIBLE
+            tvUsrScanned.text = "Hi! " + scannedUserData.firstName + " " + scannedUserData.lastName + "\n Thanks for scanning"
+            tvUsrScanned!!.visibility = View.VISIBLE
+        } else {
+            btnSubmit!!.visibility = View.GONE
+            tvUsrScanned!!.visibility = View.GONE
+        }
+    }
+
+    private fun permissionCheck() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            checkPermissionForCameraUse()
+        }
+    }
+
+
+    private fun startQrCodeScanning() {
+        // Make view visible
+
+        mSpinnerPeople.visibility = View.GONE
+        scannerView.visibility = View.VISIBLE
+        tvScannerTxt.visibility = View.VISIBLE
+        btnSubmit?.visibility = View.GONE
+
+
+        // Parameters (default values)
+        codeScanner.camera = CodeScanner.CAMERA_BACK // or CAMERA_FRONT or specific camera id
+        codeScanner.formats = CodeScanner.ALL_FORMATS // list of type BarcodeFormat,
+        // ex. listOf(BarcodeFormat.QR_CODE)
+        codeScanner.autoFocusMode = AutoFocusMode.SAFE // or CONTINUOUS
+        codeScanner.scanMode = ScanMode.SINGLE // or CONTINUOUS or PREVIEW
+        codeScanner.isAutoFocusEnabled = true // Whether to enable auto focus or not
+        codeScanner.isFlashEnabled = false // Whether to enable flash or not
+
+
+        // Callbacks
+        codeScanner.decodeCallback = DecodeCallback {
+            runOnUiThread {
+                codeScanner.startPreview()
+                Log.e("Code scanned", it.text)
+                var userCode = it.text.replace("3hd.us/", "")
+                Log.e("Update scanned", userCode)
+                viewModel.readUserDetail(userCode)
+            }
+        }
+
+        codeScanner.errorCallback = ErrorCallback { // or ErrorCallback.SUPPRESS
+            runOnUiThread {
+                codeScanner.startPreview()
+                Toast.makeText(
+                    this,
+                    "Camera initialization error: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+        codeScanner.startPreview()
+
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        codeScanner.startPreview()
+    }
+
+    override fun onPause() {
+        codeScanner.releaseResources()
+        super.onPause()
+    }
+
+
     private fun getSelectedType(): Int? {
-       return  if(mCheckinCard.visibility==View.VISIBLE)
-       {
-           1
-       }
-         else{
-             2
-       }
+        return if (mCheckinCard.visibility == View.VISIBLE) {
+            1
+        } else {
+            2
+        }
 
     }
 
@@ -307,7 +419,7 @@ class ShowTimeSlotActivity : AppCompatActivity() {
                                 Snackbar.LENGTH_LONG
                             )
                         }
-                        snack?.show()
+                        snack.show()
                         //execute when 'never Ask Again' tick and permission dialog not show
                     } else {
                         val snack = mSpinnerPeople.let { it1 ->
@@ -317,7 +429,7 @@ class ShowTimeSlotActivity : AppCompatActivity() {
                                 Snackbar.LENGTH_LONG
                             )
                         }
-                        snack?.show()
+                        snack.show()
 //                        if (openDialogOnce) {
 //                            alertView()
 //                        }

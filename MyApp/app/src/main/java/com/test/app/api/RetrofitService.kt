@@ -29,6 +29,11 @@ interface RetrofitService {
 
     @GET("api/{org_slug}/license_plates/{license_plates}")
     fun readQrCode( @Path("org_slug") orgSlug: String? =  MyApplication.appContext.getSharedPreferences(MyApplication.appContext.packageName, Context.MODE_PRIVATE).getString("org_slug",""),@Path("license_plates")  id :String): Call<ReadQrCodeResponse>
+
+    @GET("publicapi/users/lookup")
+    fun readUserQr(@Query("person_id")  id :String): Call<ReadQrCodeResponse>
+
+
     @GET("publicapi/license_plates/lookup")
     fun getLicenseId(@Query("lp_id")  id :String): Call<ReadIdHolder>
 

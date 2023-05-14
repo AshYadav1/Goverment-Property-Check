@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -36,6 +37,7 @@ class QrScannerActivity : AppCompatActivity() {
 
 
     private var logout: Button? = null
+    private var usrScanned: TextView? = null
     private var ivBack: ImageView? = null
 
     //    private lateinit var viewModelFireBase: QrCodeForFirebase
@@ -62,28 +64,36 @@ class QrScannerActivity : AppCompatActivity() {
     private val retrofitService = RetrofitService.getInstance()
     private val retrofitServiceFirebase = RetrofitService.getInstanceForFirebase()
     private val retrofitServiceMoveItem = RetrofitService.getInstanceForMoveItem()
+
     @SuppressLint("MissingInflatedId", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_scanner)
 //        mutableListOf<Data>()
-        mListOfSelectedUrl=mutableSetOf()
+        mListOfSelectedUrl = mutableSetOf()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        mCheckInTime=  intent.getStringExtra("check_in_time")
-        mUserChoosedtime=  intent.getStringExtra("user_time")
-        mLocationChooseTime=  intent.getStringExtra("location_choose_time")
-        mCheckOutTime=  intent.getStringExtra("check_OUT_time")
-        mUserName=  intent.getStringExtra("user")
+        mCheckInTime = intent.getStringExtra("check_in_time")
+        mUserChoosedtime = intent.getStringExtra("user_time")
+        mLocationChooseTime = intent.getStringExtra("location_choose_time")
+        mCheckOutTime = intent.getStringExtra("check_OUT_time")
+        mUserName = intent.getStringExtra("user")
         mCheckInTimeId = intent.getStringExtra("check_in_time_id")
         mCheckInOutId = intent.getStringExtra("check_OUT_time_id")
         mSelectedUserId = intent.getStringExtra("user_id")//getStringExtra("user_id")
-        mSelectedType = intent.getIntExtra("selected_type",0)
+        mSelectedType = intent.getIntExtra("selected_type", 0)
         logout = findViewById<Button>(R.id.log_out)
+        usrScanned = findViewById<Button>(R.id.usr_scanned)
         viewModel =
             ViewModelProvider(
                 this,
-                MyViewModelFactory(MainRepository(retrofitService,retrofitServiceFirebase,retrofitServiceMoveItem))
+                MyViewModelFactory(
+                    MainRepository(
+                        retrofitService,
+                        retrofitServiceFirebase,
+                        retrofitServiceMoveItem
+                    )
+                )
             )[QrCodeInfoGetViewModel::class.java]
 //        viewModelFireBase =
 //            ViewModelProvider(
@@ -91,6 +101,12 @@ class QrScannerActivity : AppCompatActivity() {
 //                MyViewModelFactory(MainRepository(retrofitService,retrofitServiceFirebase,retrofitServiceMoveItem))
 //            )[QrCodeForFirebase::class.java]
 
+
+        // Setting username
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences(packageName, Context.MODE_PRIVATE)
+        val scannedUsername = sharedPreferences.getString("scanned_username", "")
+        usrScanned!!.text = "Hi! $scannedUsername. Please scan items"
 
         val mId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
@@ -100,15 +116,15 @@ class QrScannerActivity : AppCompatActivity() {
 //        val ip: String = Formatter.formatIpAddress(wifiMgr.getConnectionInfo().getIpAddress())
         val MAC_ADDRESS = wifiInfo.macAddress
 
-        var uniqueId = UUID.randomUUID().toString();
-        val ipAddress =getLocalIpAddress()
+        var uniqueId = UUID.randomUUID().toString()
+        val ipAddress = getLocalIpAddress()
 
 
         viewModel.movieList.observe(this) {
 
 
             it.data?.let { it1 ->
-                it1.time=Calendar.getInstance().timeInMillis.toString()
+                it1.time = Calendar.getInstance().timeInMillis.toString()
                 mListOfData.add(it1)
             }
             codeScanner.startPreview()
@@ -117,18 +133,26 @@ class QrScannerActivity : AppCompatActivity() {
         }
         viewModel.errorMessage.observe(this) {
 
-            Toast.makeText(this@QrScannerActivity,it,Toast.LENGTH_LONG).show()
+            Toast.makeText(this@QrScannerActivity, it, Toast.LENGTH_LONG).show()
             val intent = Intent(this@QrScannerActivity, ShowTimeSlotActivity::class.java)
-            intent.putExtra("check_in_time",
-                mCheckInTime)
-            intent.putExtra("check_in_time_id",
-                mCheckInTimeId)
-            intent.putExtra("check_OUT_time_id",
-                mCheckInOutId)
-            intent.putExtra("check_OUT_time",
-                mCheckInOutId)
-            intent.putExtra("check_OUT_time",mCheckOutTime)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(
+                "check_in_time",
+                mCheckInTime
+            )
+            intent.putExtra(
+                "check_in_time_id",
+                mCheckInTimeId
+            )
+            intent.putExtra(
+                "check_OUT_time_id",
+                mCheckInOutId
+            )
+            intent.putExtra(
+                "check_OUT_time",
+                mCheckInOutId
+            )
+            intent.putExtra("check_OUT_time", mCheckOutTime)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
             finish()
             overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left)
@@ -137,48 +161,70 @@ class QrScannerActivity : AppCompatActivity() {
         viewModel.doneObserver.observe(this) {
             val intent = Intent(this@QrScannerActivity, ShowTimeSlotActivity::class.java)
 
-            intent.putExtra("check_in_time",
-                mCheckInTime)
-            intent.putExtra("check_in_time_id",
-               mCheckInTimeId)
-            intent.putExtra("check_OUT_time_id",
-                mCheckInOutId)
-            intent.putExtra("check_OUT_time",
-                mCheckOutTime)
-            intent.putExtra("check_OUT_time",mCheckOutTime)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(
+                "check_in_time",
+                mCheckInTime
+            )
+            intent.putExtra(
+                "check_in_time_id",
+                mCheckInTimeId
+            )
+            intent.putExtra(
+                "check_OUT_time_id",
+                mCheckInOutId
+            )
+            intent.putExtra(
+                "check_OUT_time",
+                mCheckOutTime
+            )
+            intent.putExtra("check_OUT_time", mCheckOutTime)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
 
             startActivity(intent)
-             finish()
+            finish()
             overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left)
         }
 
 
-
-
         val textview = findViewById<Button>(R.id.btn_submit)
-         mRecyclerView = findViewById(R.id.rc_data)
-        mListOfData= mutableListOf()
+        mRecyclerView = findViewById(R.id.rc_data)
+        mListOfData = mutableListOf()
         ivBack = findViewById<ImageView>(R.id.iv_back)
-        ivBack?.visibility= View.VISIBLE
+        ivBack?.visibility = View.VISIBLE
         ivBack?.setOnClickListener {
             onBackPressed()
         }
 
-        mRecyclerView?.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,true)
-       mAdapter= DataShowAdapter(this,mListOfData)
-        mRecyclerView?.adapter=mAdapter
+        mRecyclerView?.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, true)
+        mAdapter = DataShowAdapter(this, mListOfData)
+        mRecyclerView?.adapter = mAdapter
         textview.setOnClickListener {
-
-
-             if(mListOfData.size>0)
-             {
-                 viewModel.hirFirebaseId(uniqueId,MAC_ADDRESS,ipAddress,mId,mSelectedType,mCheckInTimeId,mCheckInOutId,mUserName,mSelectedUserId,mUserChoosedtime,mLocationChooseTime,mListOfData)
-             }
-             else{
-                 val snack = textview?.let { it1 -> Snackbar.make(it1,"Please scan at-least on code ", Snackbar.LENGTH_LONG) }
-                 snack?.show()
-             }
+            if (mListOfData.size > 0) {
+                viewModel.hirFirebaseId(
+                    uniqueId,
+                    MAC_ADDRESS,
+                    ipAddress,
+                    mId,
+                    mSelectedType,
+                    mCheckInTimeId,
+                    mCheckInOutId,
+                    mUserName,
+                    mSelectedUserId,
+                    mUserChoosedtime,
+                    mLocationChooseTime,
+                    mListOfData
+                )
+            } else {
+                val snack = textview?.let { it1 ->
+                    Snackbar.make(
+                        it1,
+                        "Please scan at-least on code ",
+                        Snackbar.LENGTH_LONG
+                    )
+                }
+                snack?.show()
+            }
 
 //            val intent = Intent(this@QrScannerActivity, ChooseTimeSloActivity::class.java)
 //
@@ -187,7 +233,7 @@ class QrScannerActivity : AppCompatActivity() {
         }
 
         val scannerView = findViewById<CodeScannerView>(R.id.scanner_view)
-         tvCount = findViewById(R.id.tv_count)
+        tvCount = findViewById(R.id.tv_count)
         logout?.setOnClickListener {
             val sharedPreferences: SharedPreferences = this.getSharedPreferences(
                 packageName,
@@ -197,7 +243,7 @@ class QrScannerActivity : AppCompatActivity() {
             editor.clear()
             editor.commit()
             val intent = Intent(this@QrScannerActivity, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         }
 
@@ -213,39 +259,32 @@ class QrScannerActivity : AppCompatActivity() {
         codeScanner.isFlashEnabled = false // Whether to enable flash or not
 
 
-
         // Callbacks
         codeScanner.decodeCallback = DecodeCallback {
             runOnUiThread {
-
-                 if(!mListOfSelectedUrl.contains(it.text))
-                 {
-
-                     val baseUrl = it.text.substring(it.text.lastIndexOf("/")+1, it.text.length)
-                      if(it.text.length>=32)
-                      {
-
-                          it.text
-                          viewModel.getDataFromText(baseUrl)
-
-                          mListOfSelectedUrl.add(it.text)
-                      }
-                      else{
-                          Toast.makeText(this@QrScannerActivity,"This Code is not valid",Toast.LENGTH_LONG).show()
-                      }
-
-                 }
-                 else{
-                      Toast.makeText(this@QrScannerActivity,"This QR Code Already Scanned",Toast.LENGTH_LONG).show()
-                      codeScanner.startPreview()
-                 }
-
-
-
-
-
-                tvCount?.text="Items ".plus(mListOfSelectedUrl.size)
-
+                Log.e("Response from QR", it.text)
+                if (!mListOfSelectedUrl.contains(it.text)) {
+                    val baseUrl = it.text.substring(it.text.lastIndexOf("/") + 1, it.text.length)
+                    if (it.text.length >= 32) {
+                        it.text
+                        viewModel.getDataFromText(baseUrl)
+                        mListOfSelectedUrl.add(it.text)
+                    } else {
+                        Toast.makeText(
+                            this@QrScannerActivity,
+                            "This Code is not valid",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        this@QrScannerActivity,
+                        "This QR Code Already Scanned",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    codeScanner.startPreview()
+                }
+                tvCount?.text = "Items ".plus(mListOfSelectedUrl.size)
             }
         }
 
@@ -272,7 +311,7 @@ class QrScannerActivity : AppCompatActivity() {
 
                 val intent = Intent(this@QrScannerActivity, MainActivity::class.java)
 //            intent.putExtra("key", "Kotlin")
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
 
                 finish()
@@ -281,8 +320,10 @@ class QrScannerActivity : AppCompatActivity() {
         }
         codeScanner.errorCallback = ErrorCallback { // or ErrorCallback.SUPPRESS
             runOnUiThread {
-                Toast.makeText(this, "Camera initialization error: ${it.message}",
-                    Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this, "Camera initialization error: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -290,6 +331,7 @@ class QrScannerActivity : AppCompatActivity() {
             codeScanner.startPreview()
         }
     }
+
     fun getIPAddress(useIPv4: Boolean): String? {
         try {
             val interfaces: List<NetworkInterface> =
@@ -299,7 +341,7 @@ class QrScannerActivity : AppCompatActivity() {
                 for (addr in addrs) {
                     if (!addr.isLoopbackAddress) {
                         val sAddr = addr.hostAddress.uppercase(Locale.getDefault())
-                        val isIPv4: Boolean =false
+                        val isIPv4: Boolean = false
                         if (useIPv4) {
                             if (isIPv4) return sAddr
                         } else {

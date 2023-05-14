@@ -5,8 +5,8 @@
       <map>
         <entry key="app/src/main/res/layout/activity_choose_time_slo.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.24270833333333333" />
-        <entry key="app/src/main/res/layout/activity_qr_scanner.xml" value="0.45" />
-        <entry key="app/src/main/res/layout/activity_show_time_slot.xml" value="0.11" />
+        <entry key="app/src/main/res/layout/activity_qr_scanner.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/activity_show_time_slot.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_splash.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/content_splash.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/custom_layout.xml" value="0.24166666666666667" />

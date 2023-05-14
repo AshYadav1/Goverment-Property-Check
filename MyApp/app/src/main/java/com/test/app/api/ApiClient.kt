@@ -15,11 +15,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-
 object ApiClient {
-
-
-
 
 
     private val gson: Gson by lazy {
@@ -27,12 +23,15 @@ object ApiClient {
     }
 
 
-     private val httpClient: OkHttpClient? by lazy {
+    private val httpClient: OkHttpClient? by lazy {
 
 
-         val sharedPreferences: SharedPreferences = MyApplication.appContext.getSharedPreferences(MyApplication.appContext.packageName, Context.MODE_PRIVATE)
+        val sharedPreferences: SharedPreferences = MyApplication.appContext.getSharedPreferences(
+            MyApplication.appContext.packageName,
+            Context.MODE_PRIVATE
+        )
 
-         OkHttpClient.Builder()
+        OkHttpClient.Builder()
 
             .addInterceptor(ChuckerInterceptor(MyApplication.appContext))
             .addInterceptor {
@@ -43,15 +42,16 @@ object ApiClient {
 //                requestBuilder.header("Cookie", "session=.eJwlzjsOwjAMANC7ZGaIf4nTy1R2YgvWlk6Iu1OJ6a3vU_Y84nyW7X1c8Sj7a5WtJPhAcqV0Xj3NpDLbojpNmAOUq4dHTbohNp4BQ7Gxdx5KNgxYPbmjje4BVjt5IkxUEIzKA010jd6guXQT1AlpBCpYeVq5I9cZx39D5fsD2vYu6Q.Y947Bg.RqryG5KJSZHj3pwjFdHtBn1hnlQ; Path=/; HttpOnly;")
 //                requestBuilder.header("Content-Type", "text/plain")
 
-                if(sharedPreferences.contains("access_token") && !TextUtils.isEmpty(sharedPreferences.getString("access_token","")))
-                {
+                if (sharedPreferences.contains("access_token") && !TextUtils.isEmpty(
+                        sharedPreferences.getString("access_token", "")
+                    )
+                ) {
                     requestBuilder.header(
                         "Authorization",
 
-                        "Bearer "+sharedPreferences.getString("access_token","")
+                        "Bearer " + sharedPreferences.getString("access_token", "")
                     )
                 }
-
 
 
                 val request = requestBuilder.build()
@@ -64,7 +64,10 @@ object ApiClient {
     private val httpClientForFirebase: OkHttpClient? by lazy {
 
 
-        val sharedPreferences: SharedPreferences = MyApplication.appContext.getSharedPreferences(MyApplication.appContext.packageName, Context.MODE_PRIVATE)
+        val sharedPreferences: SharedPreferences = MyApplication.appContext.getSharedPreferences(
+            MyApplication.appContext.packageName,
+            Context.MODE_PRIVATE
+        )
 
         OkHttpClient.Builder()
 
@@ -87,7 +90,6 @@ object ApiClient {
 //                }
 
 
-
                 val request = requestBuilder.build()
                 it.proceed(request)
             }
@@ -98,7 +100,10 @@ object ApiClient {
     private val httpClientForMove: OkHttpClient? by lazy {
 
 
-        val sharedPreferences: SharedPreferences = MyApplication.appContext.getSharedPreferences(MyApplication.appContext.packageName, Context.MODE_PRIVATE)
+        val sharedPreferences: SharedPreferences = MyApplication.appContext.getSharedPreferences(
+            MyApplication.appContext.packageName,
+            Context.MODE_PRIVATE
+        )
 
         OkHttpClient.Builder()
 
@@ -119,7 +124,6 @@ object ApiClient {
 //                        "Bearer "+sharedPreferences.getString("access_token","")
 //                    )
 //                }
-
 
 
                 val request = requestBuilder.build()

@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
-
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +25,7 @@ import com.test.app.model.Data
 import com.test.app.repository.MainRepository
 import com.test.app.repository.MyViewModelFactory
 import com.test.app.viewmodel.ChooseLocationViewModel
+import java.util.*
 
 
 class ChooseTimeSloActivity : AppCompatActivity() {
@@ -37,25 +37,27 @@ class ChooseTimeSloActivity : AppCompatActivity() {
 
     private var mSpinnerCheckOut: AppCompatSpinner? = null
     private var mSpinnerCheckIn: AppCompatSpinner? = null
-//    private lateinit var mList: Array<String>
+
+    //    private lateinit var mList: Array<String>
     private lateinit var viewModel: ChooseLocationViewModel
 
     private val retrofitService = RetrofitService.getInstance()
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_choose_time_slo)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        mChooseInObject=Data()
-        mChooseOutObject=Data()
-        mChooseInObject.name="Check in to item location"
-        mChooseOutObject.name="Checkout of item location"
+        mChooseInObject = Data()
+        mChooseOutObject = Data()
+        mChooseInObject.name = "Check in to item location"
+        mChooseOutObject.name = "Checkout of item location"
 
         viewModel =
             ViewModelProvider(
                 this,
-                MyViewModelFactory(MainRepository(retrofitService,null))
+                MyViewModelFactory(MainRepository(retrofitService, null))
             )[ChooseLocationViewModel::class.java]
 
 
@@ -94,40 +96,63 @@ class ChooseTimeSloActivity : AppCompatActivity() {
 
 
 
-             if(it==null)
-             {
-                 val snack = mSpinnerCheckIn?.let { it1 -> Snackbar.make(it1,"Something went wrong please try later", Snackbar.LENGTH_LONG) }
-                 snack?.show()
-                  return@Observer
-             }
-
-            mLocationList= mutableListOf()
-            mLocationListLocationOut= mutableListOf()
-             for( item in it as MutableList<Data>)
-             {
-                 mLocationList!!.add(item)
-                 mLocationListLocationOut!!.add(item)
-             }
-
-
-
-             if(!mLocationList?.contains(mChooseInObject)!!)
-             {
-                 mLocationList?.add(0,mChooseInObject)
-             }
-
-            if(!mLocationListLocationOut?.contains(mChooseOutObject)!!)
-            {
-                mLocationListLocationOut?.add(0,mChooseOutObject)
+            if (it == null) {
+                val snack = mSpinnerCheckIn?.let { it1 ->
+                    Snackbar.make(
+                        it1,
+                        "Something went wrong please try later",
+                        Snackbar.LENGTH_LONG
+                    )
+                }
+                snack?.show()
+                return@Observer
             }
-            val mAdapter = LocationListAdapter(this, mLocationList as ArrayList<Data>)
+
+            mLocationList = mutableListOf()
+            mLocationListLocationOut = mutableListOf()
+            for (item in it as MutableList<Data>) {
+                mLocationList!!.add(item)
+                mLocationListLocationOut!!.add(item)
+            }
 
 
+            var list = mLocationList as ArrayList<Data>
+            var newList = ArrayList<Data>()
+            for (i in list) {
+                if (!i.name.isNullOrEmpty()) {
+                    newList.add(i)
+                }
+            }
+            Collections.sort(newList, Comparator<Data> { obj1, obj2 ->
+                // ## Ascending order
+                obj1.name!!.compareTo("" + obj2.name!!)
+            })
+
+            if (!newList?.contains(mChooseInObject)!!) {
+                newList?.add(0, mChooseInObject)
+            }
+            mLocationList = newList
+            val mAdapter = LocationListAdapter(this, newList)
             mSpinnerCheckIn?.adapter = mAdapter
 
-            val mAdapterOut = LocationOutListAdapter(this, mLocationListLocationOut as ArrayList<Data>)
 
 
+            val listOut = mLocationListLocationOut as ArrayList<Data>
+            var newListOut = ArrayList<Data>()
+            for (i in listOut) {
+                if (!i.name.isNullOrEmpty()) {
+                    newListOut.add(i)
+                }
+            }
+            Collections.sort(newListOut, Comparator<Data> { obj1, obj2 ->
+                // ## Ascending order
+                obj1.name!!.compareTo("" + obj2.name!!)
+            })
+            if (!newListOut?.contains(mChooseOutObject)!!) {
+                newListOut?.add(0, mChooseOutObject)
+            }
+            mLocationListLocationOut = newListOut
+            val mAdapterOut = LocationOutListAdapter(this, newListOut)
             mSpinnerCheckOut?.adapter = mAdapterOut
         })
 
@@ -141,58 +166,55 @@ class ChooseTimeSloActivity : AppCompatActivity() {
         })
 
 
-        mSpinnerCheckIn= findViewById(R.id.acp_check_in)
-        mSpinnerCheckOut= findViewById(R.id.acp_check_out)
+        mSpinnerCheckIn = findViewById(R.id.acp_check_in)
+        mSpinnerCheckOut = findViewById(R.id.acp_check_out)
         val btnSubmit = findViewById<Button>(R.id.btn_submit)
 
 
 
         btnSubmit.setOnClickListener(View.OnClickListener {
 
-             if(  mSpinnerCheckIn?.selectedItemPosition!! >0 && mSpinnerCheckOut?.selectedItemPosition!! >0)
-             {
+            if (mSpinnerCheckIn?.selectedItemPosition!! > 0 && mSpinnerCheckOut?.selectedItemPosition!! > 0) {
 
-                 val intent = Intent(this@ChooseTimeSloActivity, ShowTimeSlotActivity::class.java)
+                val intent = Intent(this@ChooseTimeSloActivity, ShowTimeSlotActivity::class.java)
 
 
-                 saveLocation(mLocationList)
-                 intent.putExtra("check_in_time",
-                     mSpinnerCheckIn?.selectedItemPosition?.let { mLocationList?.get(it)?.name })
-                 intent.putExtra("check_in_time_id",
-                     mSpinnerCheckIn?.selectedItemPosition?.let { mLocationList?.get(it)?.beaconId })
-                 intent.putExtra("check_OUT_time_id",
-                     mSpinnerCheckOut?.selectedItemPosition?.let { mLocationListLocationOut?.get(it)?.beaconId })
-                 intent.putExtra("check_OUT_time",
-                     mSpinnerCheckOut?.selectedItemPosition?.let { mLocationListLocationOut?.get(it)?.name })
+                saveLocation(mLocationList)
+                intent.putExtra("check_in_time",
+                    mSpinnerCheckIn?.selectedItemPosition?.let { mLocationList?.get(it)?.name })
+                intent.putExtra("check_in_time_id",
+                    mSpinnerCheckIn?.selectedItemPosition?.let { mLocationList?.get(it)?.beaconId })
+                intent.putExtra("check_OUT_time_id",
+                    mSpinnerCheckOut?.selectedItemPosition?.let { mLocationListLocationOut?.get(it)?.beaconId })
+                intent.putExtra("check_OUT_time",
+                    mSpinnerCheckOut?.selectedItemPosition?.let { mLocationListLocationOut?.get(it)?.name })
 
-                 startActivity(intent)
-                 finish()
-             }
-             else{
+                startActivity(intent)
+                finish()
+            } else {
 
-                  if(mSpinnerCheckIn?.selectedItemPosition!! <=0)
-                  {
-                      val snack = Snackbar.make(it,"Please Choose Check in location",Snackbar.LENGTH_LONG)
-                      snack.show()
-                  }
-                  else{
-                      val snack = Snackbar.make(it,"Please Choose Checkout location",Snackbar.LENGTH_LONG)
-                      snack.show()
-                  }
-             }
+                if (mSpinnerCheckIn?.selectedItemPosition!! <= 0) {
+                    val snack =
+                        Snackbar.make(it, "Please Choose Check in location", Snackbar.LENGTH_LONG)
+                    snack.show()
+                } else {
+                    val snack =
+                        Snackbar.make(it, "Please Choose Checkout location", Snackbar.LENGTH_LONG)
+                    snack.show()
+                }
+            }
         })
 
 
 
 
-        mSpinnerCheckOut?.onItemSelectedListener=object :OnItemSelectedListener{
+        mSpinnerCheckOut?.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
                 id: Long
             ) {
-
 
 
             }
@@ -206,25 +228,29 @@ class ChooseTimeSloActivity : AppCompatActivity() {
 
     @SuppressLint("SuspiciousIndentation")
     private fun saveLocation(it: MutableList<Data>?) {
-        val sharedPreferences: SharedPreferences = this.getSharedPreferences(packageName,Context.MODE_PRIVATE)
-        val editor:SharedPreferences.Editor =  sharedPreferences.edit()
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences(packageName, Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-            mSpinnerCheckIn?.selectedItemPosition?.let {
-                editor.putString("check_in_name",mLocationList?.get(it)?.name) }
-            mSpinnerCheckIn?.selectedItemPosition?.let {
-                editor.putString("check_in_id",mLocationList?.get(it)?.beaconId) }
-            mSpinnerCheckOut?.selectedItemPosition?.let {
-                editor.putString("check_out_name",mLocationList?.get(it)?.name) }
-            mSpinnerCheckOut?.selectedItemPosition?.let {
-                editor.putString("check_out_id",mLocationList?.get(it)?.beaconId) }
-        editor.putBoolean("is_checkIn_Checkout_selected",true)
+        mSpinnerCheckIn?.selectedItemPosition?.let {
+            editor.putString("check_in_name", mLocationList?.get(it)?.name)
+        }
+        mSpinnerCheckIn?.selectedItemPosition?.let {
+            editor.putString("check_in_id", mLocationList?.get(it)?.beaconId)
+        }
+        mSpinnerCheckOut?.selectedItemPosition?.let {
+            editor.putString("check_out_name", mLocationList?.get(it)?.name)
+        }
+        mSpinnerCheckOut?.selectedItemPosition?.let {
+            editor.putString("check_out_id", mLocationList?.get(it)?.beaconId)
+        }
+        editor.putBoolean("is_checkIn_Checkout_selected", true)
         editor.apply()
         editor.commit()
     }
 
-    private fun  showProgress()
-    {
-         progress = ProgressDialog(this)
+    private fun showProgress() {
+        progress = ProgressDialog(this)
         progress.setTitle("Loading")
         progress.setMessage("Wait while loading...")
         progress.setCancelable(false) // disable dismiss by tapping outside of the dialog
