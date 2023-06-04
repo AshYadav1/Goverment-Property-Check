@@ -1,0 +1,8 @@
+
+dkotlin:S107M"HThis function has 12 parameters, which is greater than the 7 authorized.(Û§˜Íıÿÿÿÿ
+`kotlin:S1192j"HDefine a constant instead of duplicating this literal "3hd.us/" 4 times.(ÇĞØ¸
+jkotlin:S117O"NRename this parameter to match the regular expression ^`?[_a-z][a-zA-Z0-9]*`?$(£«Î¾úÿÿÿÿ
+wkotlin:S1186+"ZAdd a nested comment explaining why this function is empty or complete the implementation.(ù‹£Äøÿÿÿÿ
+rkotlin:S1186F"ZAdd a nested comment explaining why this function is empty or complete the implementation.(£¾¥Ù
+skotlin:S1186©"ZAdd a nested comment explaining why this function is empty or complete the implementation.(­Œÿ
+skotlin:S1186È"ZAdd a nested comment explaining why this function is empty or complete the implementation.(£¾¥Ù

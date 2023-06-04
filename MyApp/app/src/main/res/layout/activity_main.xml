@@ -119,7 +119,7 @@
       android:textColor="@color/black"
       android:gravity="center"
       android:layout_marginTop="10dp"
-      android:text="If password doesn’t work so you need to assistance contact moment track."
+      android:text="If password doesn't work contact MomentTrack."
       android:textSize="18dp"
       android:layout_height="wrap_content" />
 

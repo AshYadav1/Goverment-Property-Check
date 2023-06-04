@@ -125,7 +125,8 @@ class ChooseTimeSloActivity : AppCompatActivity() {
             }
             Collections.sort(newList, Comparator<Data> { obj1, obj2 ->
                 // ## Ascending order
-                obj1.name!!.compareTo("" + obj2.name!!)
+                obj1.name!!.toString().toLowerCase()!!
+                    .compareTo("" + obj2.name.toString().toLowerCase()!!)
             })
 
             if (!newList?.contains(mChooseInObject)!!) {
@@ -134,7 +135,6 @@ class ChooseTimeSloActivity : AppCompatActivity() {
             mLocationList = newList
             val mAdapter = LocationListAdapter(this, newList)
             mSpinnerCheckIn?.adapter = mAdapter
-
 
 
             val listOut = mLocationListLocationOut as ArrayList<Data>
@@ -146,7 +146,9 @@ class ChooseTimeSloActivity : AppCompatActivity() {
             }
             Collections.sort(newListOut, Comparator<Data> { obj1, obj2 ->
                 // ## Ascending order
-                obj1.name!!.compareTo("" + obj2.name!!)
+//                obj1.name!!.compareTo("" + obj2.name!!)
+                obj1.name!!.toString().toLowerCase()!!
+                    .compareTo("" + obj2.name.toString().toLowerCase()!!)
             })
             if (!newListOut?.contains(mChooseOutObject)!!) {
                 newListOut?.add(0, mChooseOutObject)
@@ -173,12 +175,17 @@ class ChooseTimeSloActivity : AppCompatActivity() {
 
 
         btnSubmit.setOnClickListener(View.OnClickListener {
+            if (mSpinnerCheckIn!!.selectedItemPosition == mSpinnerCheckOut!!.selectedItemPosition){
+                Toast.makeText(
+                    this@ChooseTimeSloActivity,
+                    "Checkin and checkout can't be same",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@OnClickListener
+            }
 
             if (mSpinnerCheckIn?.selectedItemPosition!! > 0 && mSpinnerCheckOut?.selectedItemPosition!! > 0) {
-
                 val intent = Intent(this@ChooseTimeSloActivity, ShowTimeSlotActivity::class.java)
-
-
                 saveLocation(mLocationList)
                 intent.putExtra("check_in_time",
                     mSpinnerCheckIn?.selectedItemPosition?.let { mLocationList?.get(it)?.name })
@@ -188,11 +195,9 @@ class ChooseTimeSloActivity : AppCompatActivity() {
                     mSpinnerCheckOut?.selectedItemPosition?.let { mLocationListLocationOut?.get(it)?.beaconId })
                 intent.putExtra("check_OUT_time",
                     mSpinnerCheckOut?.selectedItemPosition?.let { mLocationListLocationOut?.get(it)?.name })
-
                 startActivity(intent)
                 finish()
             } else {
-
                 if (mSpinnerCheckIn?.selectedItemPosition!! <= 0) {
                     val snack =
                         Snackbar.make(it, "Please Choose Check in location", Snackbar.LENGTH_LONG)
@@ -204,9 +209,6 @@ class ChooseTimeSloActivity : AppCompatActivity() {
                 }
             }
         })
-
-
-
 
         mSpinnerCheckOut?.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(

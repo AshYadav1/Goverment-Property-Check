@@ -307,6 +307,8 @@ class ShowTimeSlotActivity : AppCompatActivity() {
             btnSubmit!!.visibility = View.VISIBLE
             tvUsrScanned.text = "Hi! " + scannedUserData.firstName + " " + scannedUserData.lastName + "\n Thanks for scanning"
             tvUsrScanned!!.visibility = View.VISIBLE
+            // move to next screen
+            btnSubmit!!.callOnClick()
         } else {
             btnSubmit!!.visibility = View.GONE
             tvUsrScanned!!.visibility = View.GONE

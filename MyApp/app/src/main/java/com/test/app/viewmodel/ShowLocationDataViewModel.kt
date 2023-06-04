@@ -63,7 +63,7 @@ class ShowLocationDataViewModel(private val repository: MainRepository) : ViewMo
                     userIdCaptured.value= response.body()!!.data!!.id!!
                 } else if (response.code() == 401) {
                     failure.postValue(response.code())
-                    errorMessage.postValue(response.message())
+                    errorMessage.postValue("Invalid code")
                 } else {
                     errorMessage.postValue(response.message())
                 }

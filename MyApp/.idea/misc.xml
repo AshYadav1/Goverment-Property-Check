@@ -3,6 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1075" />
+        <entry key="app/src/main/res/drawable/background_row.xml" value="0.1075" />
+        <entry key="app/src/main/res/drawable/button_background.xml" value="0.1075" />
+        <entry key="app/src/main/res/drawable/ic_arrow_forward.xml" value="0.1595" />
+        <entry key="app/src/main/res/drawable/input_text_background.xml" value="0.1075" />
         <entry key="app/src/main/res/layout/activity_choose_time_slo.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/activity_qr_scanner.xml" value="0.25" />
@@ -14,7 +19,7 @@
         <entry key="app/src/main/res/layout/custom_spinner_item_out.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/layout/fragment_second.xml" value="0.24270833333333333" />
-        <entry key="app/src/main/res/layout/row_data.xml" value="0.24270833333333333" />
+        <entry key="app/src/main/res/layout/row_data.xml" value="0.45" />
         <entry key="app/src/main/res/layout/simple_spinner_dropdown_item_my.xml" value="0.24270833333333333" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.117" />
       </map>
